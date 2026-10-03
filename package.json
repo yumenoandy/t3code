@@ -10,6 +10,8 @@
     "dev:web": "node scripts/dev-runner.ts dev:web",
     "dev:marketing": "vp run --filter @t3tools/marketing dev",
     "dev:desktop": "node scripts/dev-runner.ts dev:desktop",
+    "fork:dev": "T3CODE_BUNDLED_DEV=${T3CODE_BUNDLED_DEV:-1} node scripts/dev-runner.ts dev",
+    "fork:serve": "vp run --filter t3 build && vp run --filter t3 start",
     "migrate-dev-db": "node apps/server/scripts/migrate-dev-db.ts",
     "start": "vp run --filter t3 start",
     "start:desktop": "vp run --filter @t3tools/desktop start",
