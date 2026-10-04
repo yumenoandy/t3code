@@ -49,9 +49,8 @@ import * as ServerEnvironment from "./environment/ServerEnvironment.ts";
 import * as EnvironmentAuth from "./auth/EnvironmentAuth.ts";
 import {
   formatHeadlessServeOutput,
-  formatHostForUrl,
-  isWildcardHost,
   issueHeadlessServeAccessInfo,
+  resolveHeadlessConnectionString,
 } from "./startupAccess.ts";
 
 export class ServerRuntimeStartupError extends Schema.TaggedError<ServerRuntimeStartupError>()(
@@ -316,11 +315,7 @@ const resolveAutoBootstrapWelcomeTargets = Effect.gen(function* () {
 const resolveStartupBrowserTarget = Effect.gen(function* () {
   const serverConfig = yield* ServerConfig.ServerConfig;
   const serverAuth = yield* EnvironmentAuth.EnvironmentAuth;
-  const localUrl = `http://localhost:${serverConfig.port}`;
-  const bindUrl =
-    serverConfig.host && !isWildcardHost(serverConfig.host)
-      ? `http://${formatHostForUrl(serverConfig.host)}:${serverConfig.port}`
-      : localUrl;
+  const bindUrl = resolveHeadlessConnectionString(serverConfig.host, serverConfig.port);
   const baseTarget = serverConfig.devUrl?.toString() ?? bindUrl;
   return serverConfig.mode === "desktop"
     ? baseTarget

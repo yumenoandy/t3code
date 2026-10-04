@@ -45,6 +45,7 @@ const isIpv6Family = (family: string | number): boolean => family === "IPv6" || 
 export const resolveHeadlessConnectionHost = (
   host: string | undefined,
   interfaces: NetworkInterfacesMap = NodeOS.networkInterfaces(),
+  machineHostname: string = NodeOS.hostname(),
 ): string => {
   if (!host) {
     return "localhost";
@@ -52,6 +53,14 @@ export const resolveHeadlessConnectionHost = (
 
   if (!isWildcardHost(host)) {
     return normalizeHost(host);
+  }
+
+  // A wildcard bind is reachable on every interface, and the first external
+  // address is often not the one other devices route to (LAN vs tailnet).
+  // The machine name resolves through MagicDNS or mDNS on whichever network
+  // the client shares with this host.
+  if (machineHostname.length > 0 && !isLoopbackHost(machineHostname)) {
+    return machineHostname;
   }
 
   const interfaceEntries = Object.values(interfaces).flatMap((entries) => entries ?? []);
@@ -72,8 +81,9 @@ export const resolveHeadlessConnectionString = (
   host: string | undefined,
   port: number,
   interfaces: NetworkInterfacesMap = NodeOS.networkInterfaces(),
+  machineHostname: string = NodeOS.hostname(),
 ): string => {
-  const connectionHost = resolveHeadlessConnectionHost(host, interfaces);
+  const connectionHost = resolveHeadlessConnectionHost(host, interfaces, machineHostname);
   return `http://${formatHostForUrl(connectionHost)}:${port}`;
 };
 
